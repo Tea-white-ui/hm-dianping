@@ -1,7 +1,6 @@
 package com.hmdp.utils;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.util.StrUtil;
 import com.hmdp.dto.UserDTO;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -13,8 +12,8 @@ import java.util.concurrent.TimeUnit;
 
 public class RefreshTokenInterceptor implements HandlerInterceptor {
     // 这里不能使用Resource和Autowired，必须使用构造器注入
-
     private StringRedisTemplate stringRedisTemplate;
+
     public RefreshTokenInterceptor(StringRedisTemplate stringRedisTemplate) {
         this.stringRedisTemplate = stringRedisTemplate;
     }
