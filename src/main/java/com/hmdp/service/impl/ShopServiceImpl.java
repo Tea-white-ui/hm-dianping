@@ -82,4 +82,11 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
         // 5. 返回结果
         return Result.ok(shopsPage);
     }
+
+    @Override
+    public Result updateShop(Shop shop) {
+        // 启动事务
+        // todo 做完这里
+        return null;
+    }
 }

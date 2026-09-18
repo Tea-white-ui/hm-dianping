@@ -18,4 +18,6 @@ public interface IShopService extends IService<Shop> {
 
     Result queryByType(Integer type_id,Integer current);
 
+    Result updateShop(Shop shop);
+
 }
