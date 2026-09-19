@@ -13,6 +13,7 @@ import com.hmdp.utils.SystemConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 
@@ -84,9 +85,13 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
     }
 
     @Override
-    public Result updateShop(Shop shop) {
-        // 启动事务
-        // todo 做完这里
-        return null;
+    @Transactional
+    public Result update(Shop shop) {
+        if(shop.getId() == null) return Result.fail("店铺id不能为空");
+        // 1. 更新数据库
+        save(shop);
+        // 2. 删除缓存
+        stringRedisTemplate.delete(CACHE_SHOP_KEY + shop.getId());
+        return Result.ok();
     }
 }
