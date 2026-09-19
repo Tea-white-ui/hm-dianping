@@ -33,7 +33,12 @@ public class ShopController {
      */
     @GetMapping("/{id}")
     public Result queryShopById(@PathVariable("id") Long id) {
-        return shopService.queryById(id);
+        try {
+            Result shop = shopService.queryById(id);
+            return Result.ok(shop);
+        } catch (InterruptedException e) {
+            return Result.fail("服务器繁忙，请稍后再试");
+        }
     }
 
     /**
