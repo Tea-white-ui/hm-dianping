@@ -1,5 +1,6 @@
 package com.hmdp.service.impl;
 
+import cn.hutool.core.lang.TypeReference;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -58,7 +59,7 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
         String shopsPageJSON = stringRedisTemplate.opsForValue().get(CACHE_SHOP_TYPE_KEY + type_id + CURRENT_KEY + current);
         if(StrUtil.isNotBlank(shopsPageJSON)){
             // 2. 存在，直接返回
-            stringRedisTemplate.expire(CACHE_SHOP_TYPE_KEY + type_id + CURRENT_KEY + current, CACHE_SHOP_TTL, TimeUnit.MINUTES);
+            stringRedisTemplate.expire(CACHE_SHOP_TYPE_KEY + type_id + CURRENT_KEY + current, CACHE_SHOP_TYPE_TTL, TimeUnit.MINUTES);
             return Result.ok(JSONUtil.toList(shopsPageJSON, Shop.class));
         }
 
@@ -67,11 +68,11 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
                 .eq("type_id", type_id)
                 .page(new Page<>(current, SystemConstants.DEFAULT_PAGE_SIZE));
 
-        // 4. 存入缓存
-        stringRedisTemplate.opsForValue().set(CACHE_SHOP_TYPE_KEY + type_id + CURRENT_KEY + current, JSONUtil.toJsonStr(shopsPage), CACHE_SHOP_TTL, TimeUnit.MINUTES);
+        // 4. 存入缓存（只缓存记录列表，与前端约定的数组结构保持一致）
+        stringRedisTemplate.opsForValue().set(CACHE_SHOP_TYPE_KEY + type_id + CURRENT_KEY + current, JSONUtil.toJsonStr(shopsPage.getRecords()), CACHE_SHOP_TYPE_TTL, TimeUnit.MINUTES);
 
-        // 5. 返回结果
-        return Result.ok(shopsPage);
+        // 5. 返回结果（前端按数组遍历 data，必须返回 records 而不是整个 Page 对象）
+        return Result.ok(shopsPage.getRecords());
     }
 
     @Override

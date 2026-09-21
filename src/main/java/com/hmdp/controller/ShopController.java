@@ -34,8 +34,7 @@ public class ShopController {
     @GetMapping("/{id}")
     public Result queryShopById(@PathVariable("id") Long id) {
         try {
-            Result shop = shopService.queryById(id);
-            return Result.ok(shop);
+            return shopService.queryById(id);
         } catch (InterruptedException e) {
             return Result.fail("服务器繁忙，请稍后再试");
         }
