@@ -8,7 +8,9 @@ import com.hmdp.mapper.VoucherOrderMapper;
 import com.hmdp.service.ISeckillVoucherService;
 import com.hmdp.service.IVoucherOrderService;
 import com.hmdp.utils.RedisIdWorker;
+import com.hmdp.utils.SimpleRedisLock;
 import com.hmdp.utils.UserHolder;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +36,9 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
     @Resource
     private IVoucherOrderService voucherOrderService;
 
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+
     @Override
     public Result seckillVoucher(Long voucherId) {
 
@@ -57,10 +62,19 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
 
         Long userId = UserHolder.getUser().getId();
         // 5. 一人一单，套上悲观锁，锁需要在被事务管理的方法外，防止事务还没提交锁就已经释放
-        synchronized (userId.toString().intern()) { // .intern是为了字符串对象归一化，让锁住的是同一个对象
-            // 为了防止事务失效，需要用Spring注入本service再调用方法
-            return voucherOrderService.createVoucherOrder(voucherId);
+        SimpleRedisLock simpleRedisLock = new SimpleRedisLock("order:" + userId, stringRedisTemplate);
+
+        boolean isLocked = simpleRedisLock.tryLock(1200);
+        if(!isLocked) {
+            // 获取锁失败
+            return Result.fail("请勿重复下单");
         }
+
+        // 6. 获取锁成功，执行业务
+        Result voucherOrder = voucherOrderService.createVoucherOrder(voucherId);
+        simpleRedisLock.unlock("order:" + userId);
+
+        return voucherOrder;
 
     }
     @Override
