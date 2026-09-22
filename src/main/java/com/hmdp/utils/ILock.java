@@ -10,7 +10,6 @@ public interface ILock {
 
     /**
      * 释放锁
-     * @param key 锁的键
      */
-    void unlock(String key);
+    void unlock();
 }

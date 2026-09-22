@@ -72,7 +72,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
 
         // 6. 获取锁成功，执行业务
         Result voucherOrder = voucherOrderService.createVoucherOrder(voucherId);
-        simpleRedisLock.unlock("order:" + userId);
+        simpleRedisLock.unlock();
 
         return voucherOrder;
 
